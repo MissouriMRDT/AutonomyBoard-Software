@@ -62,8 +62,7 @@ class RoverEvent:
 
         def handler_wrapper():
             # Calls handler with the 2nd argument of 'signal()'
-            self._args[event]
-            handler(event)
+            handler(self._args[event])
 
         if event not in self._dispatchers:
             # Create the task object if it doesn't exist
