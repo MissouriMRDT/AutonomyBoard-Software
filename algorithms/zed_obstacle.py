@@ -3,6 +3,8 @@ import math
 import numpy as np
 import sys
 
+AVOIDANCE_DISTANCE = 2 # in meters
+
 def main():
     # Create a Camera object
     zed = sl.Camera()
@@ -47,24 +49,37 @@ def main():
 
             # Get and print distance value in mm at the center of the image
             # We measure the distance camera - object using Euclidean distance
-            x = round(image.get_width() / 2)
-            y = round(image.get_height() / 2)
-            err, point_cloud_value = point_cloud.get_value(x, y)
+            # x = round(image.get_width() / 2)
+            # y = round(image.get_height() / 2)
 
-            distance = math.sqrt(point_cloud_value[0] * point_cloud_value[0] +
-                                 point_cloud_value[1] * point_cloud_value[1] +
-                                 point_cloud_value[2] * point_cloud_value[2])
+            # num pixels that are within a certain distance
+            num_close_pixels = 0
+
+            # check every pixel
+            for x in image.get_height():
+                for y in image.get_width():
+                    err, point_cloud_value = point_cloud.get_value(x, y)
+
+                    distance = math.sqrt(point_cloud_value[0] * point_cloud_value[0] +
+                                        point_cloud_value[1] * point_cloud_value[1] +
+                                        point_cloud_value[2] * point_cloud_value[2])
+                    # print('Distance: {}'.format(distance))
+
+                    if distance <= AVOIDANCE_DISTANCE:
+                        num_close_pixels += 1
+
+            print("Number of pixels detected within {}meters: {}\n".format(AVOIDANCE_DISTANCE, num_close_pixels))
 
             point_cloud_np = point_cloud.get_data()
             point_cloud_np.dot(tr_np)
 
-            if not np.isnan(distance) and not np.isinf(distance):
-                print("Distance to Camera at ({}, {}) (image center): {:1.3} m".format(x, y, distance), end="\r")
-                # Increment the loop
-                i = i + 1
-            else:
-                print("Can't estimate distance at this position.")
-                print("Your camera is probably too close to the scene, please move it backwards.\n")
+            # if not np.isnan(distance) and not np.isinf(distance):
+            #     print("Distance to Camera at ({}, {}) (image center): {:1.3} m".format(x, y, distance), end="\r")
+            #     # Increment the loop
+            #     i = i + 1
+            # else:
+            #     print("Can't estimate distance at this position.")
+            #     print("Your camera is probably too close to the scene, please move it backwards.\n")
             sys.stdout.flush()
 
     # Close the camera
