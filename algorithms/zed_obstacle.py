@@ -38,38 +38,49 @@ def main():
         # A new image is available if grab() returns SUCCESS
         if zed.grab(runtime_parameters) == sl.ERROR_CODE.SUCCESS:
             # zed.retrieve_image(image, sl.VIEW.LEFT)
-            # zed.retrieve_measure(point_cloud, sl.MEASURE.XYZRGBA)
-            zed.retrieve_measure(depth_map, sl.MEASURE.DEPTH)
-            zed.retrieve_image(depth_image, sl.VIEW.DEPTH)
+            zed.retrieve_measure(point_cloud, sl.MEASURE.XYZ)
+            # zed.retrieve_measure(depth_map, sl.MEASURE.DEPTH)
+            # zed.retrieve_image(depth_image, sl.VIEW.DEPTH)
 
-            avoidance_distance = 1 # meters
-            total_points_within_distance = 0
+            # avoidance_distance = 1 # meters
+            # total_points_within_distance = 0
 
-            cv2.imshow("Image", depth_image.get_data())
-            key = cv2.waitKey(10)
+            # # Show depth image on screen
+            # cv2.imshow("Image", depth_image.get_data())
+            # key = cv2.waitKey(10)
 
-            depth_data = depth_map.get_data()
-            np_depth_data = np.array(depth_map.get_data())
-            columns = np_depth_data.shape[1]
+            # depth_data = depth_map.get_data()
+            # np_depth_data = np.array(depth_map.get_data())
+            # columns = np_depth_data.shape[1]
 
-            print(np_depth_data.shape)
-            for x in range(columns):
-                total_points_within_distance += len(np.where(np_depth_data[:,x] < avoidance_distance)[0]))
+            # print(np_depth_data.shape)
+            # for x in range(columns):
+            #     total_points_within_distance += len(np.where(np_depth_data[:,x] < avoidance_distance)[0]))
 
-            print("Total number of points detected within {} meter: {}".format(avoidance_distance, total_points_within_distance))
+            # print("Points within {} meter: {}".format(avoidance_distance, total_points_within_distance))
 
-            # ---- POINT CLOUD STUFF ----
-            # Get and print distance value in mm at the center of the image
-            # We measure the distance camera - object using Euclidean distance
-            # x = round(image.get_width() / 2)
-            # y = round(image.get_height() / 2)
-            # err, point_cloud_value = point_cloud.get_value(x, y)
+            # # min number of points before checking point cloud data
+            # min_points = 1000
+            # # check point cloud data if it looks like there might be an object there
+            # if total_points_within_distance > min_points:
 
-            # distance = math.sqrt(point_cloud_value[0] * point_cloud_value[0] +
-            #                      point_cloud_value[1] * point_cloud_value[1] +
-            #                      point_cloud_value[2] * point_cloud_value[2])
+            np_point_cloud = np.array(point_cloud.get_data())
 
-            # print("Distance: {}".format(distance))
+            rows = np_point_cloud.shape[0]
+            cols = np_point_cloud.shape[1]
+
+            for i in range(0, rows):
+                for j in range(0, cols):
+                    point3D = point_cloud.get_value(i,j) # [x,y,z]
+                    # x = point3D[0]
+                    # y = point3D[1]
+                    # z = point3D[2]
+                    # distance = math.sqrt(point3D[0]*point3D[0] + point3D[1]*point3D[1] + point3D[2]*point3D[2])
+
+                    # ???
+
+            # if obstacle_in_path:
+            #     drive_around_obstacle(distance_to_obstacle, angle_to_obstacle)
 
     zed.close()
 
