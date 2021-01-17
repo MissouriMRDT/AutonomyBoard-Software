@@ -362,6 +362,7 @@ class RoveCommEthernetTcp:
             self.server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
         except AttributeError:
             pass
+        self.data = b""
         # bind the socket to the current machines local network IP by default (can be specified as well)
         self.server.bind((HOST, PORT))
         # accept up to 5 simulataneous connections, before we start discarding them
@@ -466,10 +467,27 @@ class RoveCommEthernetTcp:
 
         for open_socket in available_sockets:
             try:
-                header = open_socket.recv(5)
+                # Keeep reading in while we don't have 5 bytes
+                while len(self.data) < 5:
+                    self.data += open_socket.recv(5)
+
+                # First five bytest are header, rest is message body
+                header = self.data[:5]
+                self.data = self.data[5:]
+
                 rovecomm_version, data_id, data_count, data_type = struct.unpack(ROVECOMM_HEADER_FORMAT, header)
                 data_type_byte = types_int_to_byte[data_type]
-                data = open_socket.recv(data_count * types_byte_to_size[data_type_byte])
+
+                # Keep reading while we don't meet the message size requirement
+                while len(self.data) < data_count * types_byte_to_size[data_type_byte]:
+                    packet = open_socket.recv(2 * types_byte_to_size[data_type_byte])
+                    self.data += packet
+
+                # Grab only the message size
+                msg = self.data[: data_count * types_byte_to_size[data_type_byte]]
+
+                # Store rest of data
+                self.data = self.data[data_count * types_byte_to_size[data_type_byte] :]
 
                 if rovecomm_version != 2:
                     returnPacket = RoveCommPacket(ROVECOMM_INCOMPATIBLE_VERSION, "b", (1,), "")
@@ -478,9 +496,9 @@ class RoveCommEthernetTcp:
 
                 else:
                     data_type = types_int_to_byte[data_type]
-                    data = struct.unpack(">" + data_type * data_count, data)
+                    msg = struct.unpack(">" + data_type * data_count, msg)
 
-                    returnPacket = RoveCommPacket(data_id, data_type, data, "")
+                    returnPacket = RoveCommPacket(data_id, data_type, msg, "")
                     returnPacket.SetIp(*open_socket.getpeername())
                     packets.append(returnPacket)
             except Exception:
