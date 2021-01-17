@@ -3,6 +3,7 @@ import struct
 import threading
 import select
 import logging
+import time
 
 ROVECOMM_UDP_PORT = 11000
 ROVECOMM_TCP_PORT = 11111
@@ -363,6 +364,7 @@ class RoveCommEthernetTcp:
         except AttributeError:
             pass
         self.data = b""
+        self.timeout = 0.05
         # bind the socket to the current machines local network IP by default (can be specified as well)
         self.server.bind((HOST, PORT))
         # accept up to 5 simulataneous connections, before we start discarding them
@@ -467,8 +469,10 @@ class RoveCommEthernetTcp:
 
         for open_socket in available_sockets:
             try:
+                start = time.time()
+
                 # Keeep reading in while we don't have 5 bytes
-                while len(self.data) < 5:
+                while len(self.data) < 5 and (time.time() - start) < self.timeout:
                     self.data += open_socket.recv(5)
 
                 # First five bytest are header, rest is message body
@@ -479,7 +483,10 @@ class RoveCommEthernetTcp:
                 data_type_byte = types_int_to_byte[data_type]
 
                 # Keep reading while we don't meet the message size requirement
-                while len(self.data) < data_count * types_byte_to_size[data_type_byte]:
+                while (
+                    len(self.data) < data_count * types_byte_to_size[data_type_byte]
+                    and (time.time() - start) < self.timeout
+                ):
                     packet = open_socket.recv(2 * types_byte_to_size[data_type_byte])
                     self.data += packet
 
