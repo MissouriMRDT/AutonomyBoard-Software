@@ -364,7 +364,7 @@ class RoveCommEthernetTcp:
         except AttributeError:
             pass
         self.data = b""
-        self.timeout = 0.05
+        self.timeout = 0.1
         # bind the socket to the current machines local network IP by default (can be specified as well)
         self.server.bind((HOST, PORT))
         # accept up to 5 simulataneous connections, before we start discarding them
@@ -509,7 +509,7 @@ class RoveCommEthernetTcp:
                     returnPacket = RoveCommPacket(data_id, data_type, msg, "")
                     returnPacket.SetIp(*open_socket.getpeername())
                     packets.append(returnPacket)
-            except Exception:
+            except Exception as e:
                 returnPacket = RoveCommPacket()
                 packets.append(returnPacket)
 

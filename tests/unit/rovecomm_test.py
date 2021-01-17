@@ -21,7 +21,7 @@ def test_udp():
     assert core.rovecomm_node.write(packet, False) == 1
 
     # Give the listener thread a moment to catch the packet
-    time.sleep(0.05)
+    time.sleep(0.5)
     assert responses[4242].data == packet.data
     assert responses[4242].data_type == packet.data_type
     assert responses[4242].data_count == packet.data_count
@@ -40,7 +40,7 @@ def test_tcp():
     assert core.rovecomm_node.write(packet, True) == 1
 
     # Give the listener thread a moment to catch the packet
-    time.sleep(0.05)
+    time.sleep(0.5)
     assert responses[4241].data == packet.data
     assert responses[4241].data_type == packet.data_type
     assert responses[4241].data_count == packet.data_count
@@ -62,7 +62,7 @@ def test_tcp_subscribers():
     assert core.rovecomm_node.write(packet, True) == 1
 
     # Give the listener thread a moment to catch the packet
-    time.sleep(0.05)
+    time.sleep(0.5)
     assert responses[4243].data == packet.data
     assert responses[4243].data_type == packet.data_type
     assert responses[4243].data_count == packet.data_count
@@ -85,7 +85,7 @@ def test_udp_external():
     s.sendto(rovecomm_packet, ("127.0.0.1", 11000))
 
     # Give the listener thread a moment to catch the packet
-    time.sleep(0.05)
+    time.sleep(0.5)
     assert responses[4240].data == data
     assert responses[4240].data_type == "b"
     assert responses[4240].data_count == len(data)
@@ -108,7 +108,7 @@ def test_tcp_external():
     s.send(rovecomm_packet)
 
     # Give the listener thread a moment to catch the packet
-    time.sleep(0.05)
+    time.sleep(0.5)
     assert responses[4239].data == data
     assert responses[4239].data_type == "b"
     assert responses[4239].data_count == len(data)
@@ -173,7 +173,7 @@ def test_udp_subscribe():
     packet = RoveCommPacket(3, "b", (), "127.0.0.1", 11000)
     assert core.rovecomm_node.write(packet, False) == 1
 
-    time.sleep(0.05)
+    time.sleep(0.5)
     assert responses[3].data_id == packet.data_id
     assert len(core.rovecomm_node.udp_node.subscribers) == 1
 
@@ -183,7 +183,7 @@ def test_udp_subscribe():
     assert core.rovecomm_node.write(packet2, False) == 1
 
     # Packet should still be recieved because we're subscribed
-    time.sleep(0.05)
+    time.sleep(0.5)
     assert responses[4234].data == packet2.data
     assert responses[4234].data_type == packet2.data_type
     assert responses[4234].data_count == packet2.data_count
@@ -197,7 +197,7 @@ def test_udp_unsubscribe():
     packet = RoveCommPacket(4, "b", (), "127.0.0.1", 11000)
     assert core.rovecomm_node.write(packet, False) == 1
 
-    time.sleep(0.05)
+    time.sleep(0.5)
     assert responses[4].data_id == packet.data_id
     assert len(core.rovecomm_node.udp_node.subscribers) == 0
 
@@ -207,7 +207,7 @@ def test_udp_unsubscribe():
     assert core.rovecomm_node.write(packet2, False) == 1
 
     # Packet should not still be recieved because we unsubscribed
-    time.sleep(0.05)
+    time.sleep(0.5)
     assert responses.get(4233) is None
 
 
@@ -227,7 +227,7 @@ def test_invalid_rovecomm_version_tcp():
     s.send(rovecomm_packet)
 
     # Give the listener thread a moment to catch the packet
-    time.sleep(0.05)
+    time.sleep(0.5)
     assert responses[5].data == (1,)
     assert responses[5].data_type == "b"
     assert responses[5].data_count == 1
@@ -252,7 +252,7 @@ def test_invalid_rovecomm_version_udp():
     s.sendto(rovecomm_packet, ("127.0.0.1", 11000))
 
     # Give the listener thread a moment to catch the packet
-    time.sleep(0.05)
+    time.sleep(0.5)
     assert responses[5].data == (1,)
     assert responses[5].data_type == "b"
     assert responses[5].data_count == 1
@@ -284,7 +284,7 @@ def test_read_exception_udp():
     s.sendto(rovecomm_packet, ("127.0.0.1", 11000))
 
     # Give the listener thread a moment to catch the packet
-    time.sleep(0.05)
+    time.sleep(0.5)
     # Match the packet to the blank packet
     assert responses[0].data == ()
     assert responses[0].data_type == "b"
